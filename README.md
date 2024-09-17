@@ -1,9 +1,12 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+3d 라이브러리 없이 canvas tag만 사용하여 3d visualizing하기
 
-## Getting Started
+구현방법
+```
+입체 도형과 카메라의 각도를 구해 각도를 이용하여 화면에 전시
+```
 
-First, run the development server:
 
+빌드 방법
 ```bash
 npm run dev
 # or
@@ -14,23 +17,12 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+각종 에러 해결방법
+```
+1. TypeError: URL.canParse is not a function
+next 버전을 14.2.11 에서 14.2.10로 바꿔서 해결
+버전 다운그레이드는 package.json 을 수정 후 node_modules, packege-lock.json을 삭제 후 npm install
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

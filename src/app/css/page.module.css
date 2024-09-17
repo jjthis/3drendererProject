@@ -1,0 +1,21 @@
+/* .coloring>div{
+    height:10px;
+    width:10px;
+}
+.coloring>div:nth-child(odd){
+    background:#a1a101;
+
+}
+.coloring>div:nth-child(even){
+    background:#f10101;
+
+}
+.coloring{
+    display:grid;
+    grid-template-columns: repeat(100, minmax(0, 1fr));
+} */
+ .canvas{
+    height:70vh;
+    width:70vw;
+    border: groove;
+ }

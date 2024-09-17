@@ -1,101 +1,112 @@
+"use client"; 
+
 import Image from "next/image";
+import style from "./css/page.module.css"
+import {  useEffect, useRef, useState } from "react";
+import {quadrangle} from "./quadrangle";
+const PI = 3.1415926535897932384626;
+const SIZE = 1000;
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const canvasRef = useRef(null);
+  const ctxRef = useRef(null);
+  const [ctx,setCtx] = useState();
+  const [dpr,setDpr] = useState(1);
+  const [deg,setDeg] = useState([0,0]);
+  const [pos,setPos] = useState([5,-5,0]);
+  
+  useEffect(()=>{
+    const canvas = canvasRef.current;
+    setDpr(window.devicePixelRatio);
+    canvas.width =  SIZE;
+    canvas.height = SIZE; 
+    const context = canvas.getContext("2d");
+    context.scale(dpr, dpr);
+    context.strokeStyle = "black";
+    context.lineWidth = 2.5;
+    setCtx(context);
+  },[]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  function useInterval(callback:any, delay:number) {
+    const savedCallback:any = useRef(); // 최근에 들어온 callback을 저장할 ref를 하나 만든다.
+  
+    useEffect(() => {
+      savedCallback.current = callback; // callback이 바뀔 때마다 ref를 업데이트 해준다.
+    }, [callback]);
+  
+    useEffect(() => {
+      function tick() {
+        savedCallback.current(); // tick이 실행되면 callback 함수를 실행시킨다.
+      }
+      if (delay !== null) { // 만약 delay가 null이 아니라면 
+        let id = setInterval(tick, delay); // delay에 맞추어 interval을 새로 실행시킨다.
+        return () => clearInterval(id); // unmount될 때 clearInterval을 해준다.
+      }
+    }, [delay]); // delay가 바뀔 때마다 새로 실행된다.
+  }
+  let mul=1;
+
+  useInterval(()=>{
+    draw();
+    if(deg[0]<-140)mul*=-1;
+    if(deg[0]>0)mul*=-1;
+    deg[0]+=mul*2;deg[1]+=mul*2;
+    pos[0]+=mul;
+    pos[1]+=mul;
+    
+  },20);
+
+  function getDegree(x:number,y:number){
+    return (Math.atan2(y,x))*SIZE/PI;
+  }
+  function draw(){
+    ctx.clearRect(0, 0, SIZE, SIZE);
+    for(let i in quadrangle){
+      let now=quadrangle[i];
+      ctx.fillStyle = now.color;
+      ctx.beginPath();
+      let first=true;
+      for(let j of now.arr){
+        if(first){
+          ctx.moveTo(getDegree(j[0]-pos[0],j[1]-pos[1])-deg[0], getDegree(j[0]-pos[0],j[2]-pos[2])-deg[1]);
+        }else{
+          ctx.lineTo(getDegree(j[0]-pos[0],j[1]-pos[1])-deg[0], getDegree(j[0]-pos[0],j[2]-pos[2])-deg[1]);
+        }first=false;
+        // console.log(`${j[0]}, ${j[1]}`);
+      }ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+    // ctx.fillStyle = '#f00';
+    // ctx.beginPath();
+    // ctx.moveTo(0, 0);
+    // ctx.lineTo(50,50);////x,y
+    // ctx.lineTo(50, 100);
+    // ctx.lineTo(0, 90);
+    // ctx.closePath();
+    // ctx.fillStyle = "blue";
+    // ctx.fill();
+
+    // ctx.beginPath();
+    // ctx.moveTo(10, 50);
+    // ctx.lineTo(50,20);////x,y
+    // ctx.lineTo(50, 70);
+    // ctx.closePath();
+    // ctx.fillStyle = "red";
+    // ctx.fill();
+  }
+
+  return (
+    <div className="flex">
+      <main className="flex ">
+        <div className="flex flex-col h-screen w-screen justify-center items-center">
+          <canvas ref={canvasRef} className={style.canvas} ></canvas>
+        <div onClick={draw}>
+          버튼
+        </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
+
