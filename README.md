@@ -26,3 +26,5 @@ next 버전을 14.2.11 에서 14.2.10로 바꿔서 해결
 
 ```
 
+![image](./readmeSrc/tmp.gif)
+
