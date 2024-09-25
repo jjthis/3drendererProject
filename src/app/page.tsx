@@ -13,26 +13,10 @@ export default function Home() {
   const ctxRef = useRef(null);
   const [ctx,setCtx]:[any,any] = useState(null);
   const [dpr,setDpr]:[number,any] = useState(1);
-  const [deg,setDeg]:[number[],any] = useState([0,0]);
-  const [pos,setPos]:[number[],any] = useState([5,-5,0]);
+  const [deg,setDeg]:[number[],any] = useState([-997, -801]);
+  const [pos,setPos]:[number[],any] = useState([-193, 7, 56]);
+  const [pos2,setPos2]:[number[],any] = useState([0,0,0]);
   
-
-  const keydown=(e:any):any => {
-    if(e.key=="ArrowUp"){
-      goStraight(1);
-    }else if(e.key=="ArrowDown"){
-      goStraight(-1);
-    }
-  };
-
-  const keyup=(e:any):any => {
-    if(e.key=="ArrowUp"){
-      stopStraight();
-    }else if(e.key=="ArrowDown"){
-      stopStraight();
-    }
-  };
-
   useEffect(()=>{
     const canvas:any = canvasRef.current;
     setDpr(window.devicePixelRatio);
@@ -43,80 +27,79 @@ export default function Home() {
     context.strokeStyle = "black";
     context.lineWidth = 2.5;
     setCtx(context);
-
-
-    document.addEventListener("keydown", keydown);
-    
-    document.addEventListener("keyup", keyup);
-
-    return ()=>{
-      document.removeEventListener("keydown", keydown);
-      document.removeEventListener("keyup", keyup);
-    };
-
   },[]);
   useEffect(()=>{
     if(!ctx)return;
     ctx.clearRect(0, 0, SIZE, SIZE);
-    draw(ground,false);
-    draw(quadrangle,true);
+    drawGround(ground);
+    draw(quadrangle);
   });
 
-
-  const [callback,setCallback]:[any,any]=useState(():any=>{});
-  let delay=20;
-
-  const savedCallback:any = useRef(callback); // 최근에 들어온 callback을 저장할 ref를 하나 만든다.
-
-
-  useEffect(() => {
-    function tick() {
-      savedCallback.current(); // tick이 실행되면 callback 함수를 실행시킨다.
+  useEffect(()=>{
+    function goStraight(mul:number){
+      setPos2([(pos2[0]|0)+mul,(pos2[1]|0),(pos2[2]|0)]);
     }
-    if (delay !== null) { // 만약 delay가 null이 아니라면 
-      let id = setInterval(tick, delay); // delay에 맞추어 interval을 새로 실행시킨다.
-      return () => clearInterval(id); // unmount될 때 clearInterval을 해준다.
+    function goLR(mul:number){
+      setPos2([(pos2[0]|0),(pos2[1]|0)+mul,(pos2[2]|0)]);
     }
-  }, [delay]); // delay가 바뀔 때마다 새로 실행된다.
+    function goUD(mul:number){
+      setPos2([(pos2[0]|0),(pos2[1]|0),(pos2[2]|0)+mul]);
+    }
+    function goDeg(mul:number){
+      setDeg([deg[0],deg[1]+mul]);
+    }
+    function goDeg2(mul:number){
+      setDeg([deg[0]+mul,deg[1]]);
+    }
+    const keydown=(e:any):any => {
+      console.log(e);
+      if(e.key=="ArrowUp"){
+        goStraight(4);
+      }else if(e.key=="ArrowDown"){
+        goStraight(-4);
+      }else if(e.key=="ArrowLeft"){
+        goLR(4);
+      }else if(e.key=="ArrowRight"){
+        goLR(-4);
+      }else if(e.code=="Space"){
+        goUD(4);
+      }else if(e.key=="Shift"){
+        goUD(-4);
 
-  // useInterval(()=>{
-  //   draw();
-  //   if(deg[0]<-140)mul*=-1;
-  //   if(deg[0]>0)mul*=-1;
-  //   deg[0]+=mul*2;deg[1]+=mul*2;
-  //   pos[0]+=mul;
-  //   pos[1]+=mul;
-    
-  // },20);
+      }
+      // else if(e.key=="w"){
+      //   goDeg(-10);
+      // }else if(e.key=="s"){
+      //   goDeg(10);
+      // }else if(e.key=="a"){
+      //   goDeg2(-10);
+      // }else if(e.key=="d"){
+      //   goDeg2(10);
+      // }
+    };
+    console.log(deg);
+    console.log(pos);
+    document.addEventListener("keydown", keydown);
+    return ()=>{
+      document.removeEventListener("keydown", keydown);
+    };
+  });
+
+  
+
+
+  
+
+  
 
   function getDegree(x:number,y:number){
-    ////-pi~pi
-    ///90 = -pi/4~pi/4
-    ///0~pi/2
     return -((Math.atan2(y,x))+PI/4)/(PI/2)*SIZE;
   }
   function getRealDegree(x:number){
     return -x/SIZE*(PI/2)-PI/4;
   }
-  function goStraight(mul:number){
-    console.log("GO "+mul);
-    savedCallback.current = ()=>{
-      ///대각선 길이가 T일때 각도가 D일때
-      // x,y
-      // T*sin(D) = y
-      // T*cos(D) = x
-      ///x * tan(D2) = z
-      setPos([(pos[0]|0)+mul*Math.sin(getRealDegree(deg[0])),(pos[1]|0)+mul*Math.cos(getRealDegree(deg[0])),(pos[2]|0)mul*Math.sin(getRealDegree(deg[0]))*Math.tan(getRealDegree(deg[1]))]);
-    };
-      
-  }
-  function stopStraight(){
-    console.log("stop");
-    savedCallback.current = ():any=>{};
-  }
 
-
-  function draw(arr:any,isStr:boolean){
+  function drawGround(arr:any){
     for(let i in arr){
       let now=arr[i];
       ctx.fillStyle = now.color;
@@ -130,26 +113,27 @@ export default function Home() {
         }first=false;
         // console.log(`${getDegree(j[0]-pos[0],j[1]-pos[1])-deg[0]}, ${getDegree(j[0]-pos[0],j[2]-pos[2])-deg[1]}`);
       }ctx.closePath();
-      if(isStr)ctx.stroke();
-      else ctx.fill();
+      ctx.fill();
     }
-    // ctx.fillStyle = '#f00';
-    // ctx.beginPath();
-    // ctx.moveTo(0, 0);
-    // ctx.lineTo(50,50);////x,y
-    // ctx.lineTo(50, 100);
-    // ctx.lineTo(0, 90);
-    // ctx.closePath();
-    // ctx.fillStyle = "blue";
-    // ctx.fill();
+  }
 
-    // ctx.beginPath();
-    // ctx.moveTo(10, 50);
-    // ctx.lineTo(50,20);////x,y
-    // ctx.lineTo(50, 70);
-    // ctx.closePath();
-    // ctx.fillStyle = "red";
-    // ctx.fill();
+
+  function draw(arr:any){
+    for(let i in arr){
+      let now=arr[i];
+      ctx.fillStyle = now.color;
+      ctx.beginPath();
+      let first=true;
+      for(let j of now.arr){
+        if(first){
+          ctx.moveTo(getDegree(j[0]-pos[0]+pos2[0],j[1]-pos[1]+pos2[1])-deg[0], getDegree(j[0]-pos[0]+pos2[0],j[2]-pos[2]+pos2[2])-deg[1]);
+        }else{
+          ctx.lineTo(getDegree(j[0]-pos[0]+pos2[0],j[1]-pos[1]+pos2[1])-deg[0], getDegree(j[0]-pos[0]+pos2[0],j[2]-pos[2]+pos2[2])-deg[1]);
+        }first=false;
+        // console.log(`${getDegree(j[0]-pos[0],j[1]-pos[1])-deg[0]}, ${getDegree(j[0]-pos[0],j[2]-pos[2])-deg[1]}`);
+      }ctx.closePath();
+      ctx.stroke();
+    }
   }
 
   return (
